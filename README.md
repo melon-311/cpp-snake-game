@@ -8,7 +8,7 @@
 
 #### 编译
 ```bash
-g++ "sanke.cpp" -o snake
+g++ "snake.cpp" -o snake
 ```
 
 #### 运行
