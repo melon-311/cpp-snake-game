@@ -44,6 +44,7 @@ Direction dir = STOP, nextDir = STOP; // 蛇的当前移动方向,nextDir是下�
 bool gameOver = false;                // 游戏是否结束
 int score = 0;                        // 得分
 int food_row, food_col;               // 食物的坐标
+bool pause = false;                   // 暂停标记
 
 void gotoxy(int x, int y) // 用于在控制台输出时设置光标位置，可以让光标跳转到指定位置开始输出字符
 {
@@ -71,6 +72,7 @@ void initGrid() // 初始化地图且初始创建蛇
     }
     gameOver = false;
     score = 0;
+    pause = false;
 }
 
 void spawnFood() // 随机生成食物
@@ -116,6 +118,8 @@ void moveSnake() // 蛇移动核心逻辑
 {
     if (gameOver)
         return; // 如果游戏结束，则直接返回,不需要再移动
+    if (pause)
+        return; // 如果游戏暂停，则直接返回,不需要再移动
     // 1.禁止蛇反向掉头
     bool can_change = true;
     if ((dir == UP && nextDir == DOWN) || (dir == DOWN && nextDir == UP) || (dir == LEFT && nextDir == RIGHT) || (dir == RIGHT && nextDir == LEFT))
@@ -234,8 +238,10 @@ void draw()
     cout << "分数：" << score << " 长度：" << snake_length << " ";
     if (gameOver)
         cout << "游戏结束，请关闭窗口\n";
+    else if (pause)
+        cout << "=====游戏暂停，按空格键继续=====\n";
     else
-        cout << "    通过WASD控制移动\n";
+        cout << "按WASD键控制方向，按空格键暂停/继续，按X键退出\n";
     setColor(7);
 }
 
@@ -266,6 +272,9 @@ void handInput()
         case 'X':
             gameOver = true;
             break; // 按x键退出游戏
+        case ' ':
+            pause = !pause; // 按空格键暂停/继续游戏
+            break;
         }
     }
 }
