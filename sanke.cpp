@@ -232,18 +232,23 @@ void handInput()
         switch (key)        // 判断输入的键
         {
         case 'w':
+        case 'W':
             nextDir = UP;
             break;
         case 's':
+        case 'S':
             nextDir = DOWN;
             break;
         case 'a':
+        case 'A':
             nextDir = LEFT;
             break;
         case 'd':
+        case 'D':
             nextDir = RIGHT;
             break; // 按WASD键改变方向
         case 'x':
+        case 'X':
             gameOver = true;
             break; // 按x键退出游戏
         }
