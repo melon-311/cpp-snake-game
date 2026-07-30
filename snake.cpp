@@ -5,6 +5,11 @@
 #include <ctime>   //time()设置随机种子
 using namespace std;
 
+HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); // 获取控制台句柄，用于设置控制台颜色
+void setColor(int color)                           // 设置控制台颜色
+{
+    SetConsoleTextAttribute(hConsole, color);
+}
 // 窗口尺寸
 const int ROWS = 20;
 const int COLS = 20;
@@ -189,6 +194,7 @@ void draw()
 {
     gotoxy(0, 0);
     // 上边框
+    setColor(15);
     cout << "+";
     for (int i = 0; i < COLS; i++)
         cout << "--";
@@ -197,6 +203,7 @@ void draw()
     // 地图每行
     for (int i = 0; i < ROWS; i++)
     {
+        setColor(15);
         cout << "|";
         for (int j = 0; j < COLS; j++)
         {
@@ -204,24 +211,32 @@ void draw()
             if (val == 0) // 即空地
                 cout << "  ";
             else if (val == 1) // 即蛇身
-                cout << "■ ";
+            {
+                setColor(10), cout << "■ ";
+            }
             else
-                cout << "★ "; // 即食物
+            {
+                setColor(14), cout << "★ ";
+            } // 即食物
         }
+        setColor(15);
         cout << "|\n";
     }
 
     // 下边框
+    setColor(15);
     cout << "+";
     for (int i = 0; i < COLS; i++)
         cout << "--";
     cout << "+\n";
 
+    setColor(12);
     cout << "分数：" << score << " 长度：" << snake_length << " ";
     if (gameOver)
         cout << "游戏结束，请关闭窗口\n";
     else
-        cout << "WASD移动\n";
+        cout << "    通过WASD控制移动\n";
+    setColor(7);
 }
 
 void handInput()
