@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <cstdlib> //rand（）随机数
 #include <ctime>   //time()设置随机种子
+#include <cstdio>
 using namespace std;
 
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); // 获取控制台句柄，用于设置控制台颜色
@@ -43,6 +44,7 @@ int snake_length;                     // 蛇的初始长度
 Direction dir = STOP, nextDir = STOP; // 蛇的当前移动方向,nextDir是下一次移动的方向
 bool gameOver = false;                // 游戏是否结束
 int score = 0;                        // 得分
+int max_score = 0;                    // 最高分
 int food_row, food_col;               // 食物的坐标
 bool pause = false;                   // 暂停标记
 
@@ -112,6 +114,37 @@ void freeSnake()
     }
     head = tail = nullptr;
     snake_length = 0;
+}
+
+void loadMaxScore()
+{ // 加载最高分
+    FILE *file = fopen("max_score.txt", "r");
+    if (file != nullptr)
+    {
+        fscanf(file, "%d", &max_score); // 从文件中读取最高分，从file指针指向的文件中读取一个整数，并将其存储在max_score变量中
+        fclose(file);
+    }
+    else
+    {
+        max_score = 0;
+    }
+}
+
+void saveMaxScore()
+{ // 保存最高分
+    if (score > max_score)
+    {
+        max_score = score;
+        FILE *file = fopen("max_score.txt", "w");
+        if (file != nullptr)
+        {
+            fprintf(file, "%d", max_score); // 将最高分写入文件中
+            fclose(file);
+        }
+        setColor(12);
+        cout << "\n!!!恭喜创造历史最高分!!!" << endl;
+        setColor(7);
+    }
 }
 
 void moveSnake() // 蛇移动核心逻辑
@@ -236,6 +269,7 @@ void draw()
 
     setColor(12);
     cout << "分数：" << score << " 长度：" << snake_length << " ";
+    cout << "最高分：" << max_score << " " << endl;
     if (gameOver)
         cout << "游戏结束，请关闭窗口\n";
     else if (pause)
@@ -282,6 +316,7 @@ void handInput()
 int main()
 {
     srand((unsigned)time(NULL)); // 设置随机种子，食物位置随机
+    loadMaxScore();              // 加载最高分
     initGrid();                  // 初始化地图
     spawnFood();                 // 随机生成食物
 
@@ -298,7 +333,8 @@ int main()
         moveSnake(); // 移动蛇
         Sleep(100);  // 暂停100毫秒，控制游戏速度
     }
-    freeSnake();   // 释放蛇的内存
-    delete[] grid; // 释放地图的内存
+    saveMaxScore(); // 保存最高分
+    freeSnake();    // 释放蛇的内存
+    delete[] grid;  // 释放地图的内存
     return 0;
 }
