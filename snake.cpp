@@ -46,11 +46,14 @@ bool gameOver = false;                // 游戏是否结束
 int score = 0;                        // 得分
 int max_score = 0;                    // 最高分
 int food_row, food_col;               // 食物的坐标
+bool inMenu = true;                   // 是否在菜单界面
 bool pause = false;                   // 暂停标记
 
 void gotoxy(int x, int y) // 用于在控制台输出时设置光标位置，可以让光标跳转到指定位置开始输出字符
 {
-    COORD coord{x, y}; // COORD是windows.h中定义的一个结构体，用于表示控制台中的坐标
+    COORD coord;
+    coord.X = x;
+    coord.Y = y;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
     // GetStdHandle(STD_OUTPUT_HANDLE)获取标准输出句柄，SetConsoleCursorPosition设置光标位置，coord是要设置的位置
 } // 可以防止光标在输出时乱跳，与cls相比，cls会刷新整个屏幕，而gotoxy只会刷新光标所在位置，所以gotoxy更高效
@@ -227,6 +230,21 @@ void moveSnake() // 蛇移动核心逻辑
     }
 }
 
+void showMenu()
+{ // 显示菜单界面
+
+    system("cls");
+    setColor(14);
+    cout << " ===============================================\n";
+    cout << "||               贪吃蛇小游戏                  ||\n";
+    cout << "||                                             ||\n";
+    cout << "||                1. 开始游戏                  ||\n";
+    cout << "||                2. 退出游戏                  ||\n";
+    cout << " ===============================================\n";
+    setColor(7);
+    cout << "请输入选项（1或2）：";
+}
+
 void draw()
 {
     gotoxy(0, 0);
@@ -317,8 +335,20 @@ int main()
 {
     srand((unsigned)time(NULL)); // 设置随机种子，食物位置随机
     loadMaxScore();              // 加载最高分
-    initGrid();                  // 初始化地图
-    spawnFood();                 // 随机生成食物
+    showMenu();                  // 显示菜单界面
+    char choice = _getch();      // 获取用户输入的选项
+    cout << endl
+         << "你的选择是：" << choice << "，请按回车键确认" << endl;
+    getchar();
+    if (choice == '2') // 如果用户选择退出游戏
+    {
+        cout << endl
+             << "退出游戏，欢迎下次再来！" << endl;
+        return 0;
+    }
+    system("cls");
+    initGrid();  // 初始化地图
+    spawnFood(); // 随机生成食物
 
     // 隐藏控制台的光标，减少闪烁
     CONSOLE_CURSOR_INFO curInfo;
