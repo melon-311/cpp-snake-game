@@ -48,7 +48,7 @@ int max_score = 0;                    // 最高分
 int food_row, food_col;               // 食物的坐标
 bool inMenu = true;                   // 是否在菜单界面
 bool pause = false;                   // 暂停标记
-
+void freeSnake();
 void gotoxy(int x, int y) // 用于在控制台输出时设置光标位置，可以让光标跳转到指定位置开始输出字符
 {
     COORD coord;
@@ -61,6 +61,9 @@ void gotoxy(int x, int y) // 用于在控制台输出时设置光标位置，可
 
 void initGrid() // 初始化地图且初始创建蛇
 {
+    if (grid != nullptr)
+        delete[] grid;
+    freeSnake();
     grid = new int[ROWS * COLS]{}; // 初始化地图，用一维数组表示二维数组，grid[i*COLS+j]表示第i行第j列的元素,{}表示初始化为0
                                    // 初始化蛇的三条身体
     head = new Node(5, 7);
@@ -245,6 +248,25 @@ void showMenu()
     cout << "请输入选项（1或2）：";
 }
 
+void showGameOver()
+{
+    system("cls");
+    setColor(12);
+    cout << "================================================\n";
+    cout << "                 游戏结束                    \n";
+    cout << "                                             \n";
+    cout << "                本局得分：" << score << "                  \n";
+    cout << "                蛇身长度：" << snake_length << "               \n";
+    cout << "                最高分数：" << max_score << "                \n";
+    cout << "================================================\n";
+    if (score > max_score)
+    {
+        setColor(12);
+        cout << "恭喜你创造了新的最高分！" << endl;
+    }
+    setColor(7);
+    cout << "   按Y重新对局，或按X退出游戏" << endl;
+}
 void draw()
 {
     gotoxy(0, 0);
@@ -333,38 +355,56 @@ void handInput()
 
 int main()
 {
-    srand((unsigned)time(NULL)); // 设置随机种子，食物位置随机
-    loadMaxScore();              // 加载最高分
-    showMenu();                  // 显示菜单界面
-    char choice = _getch();      // 获取用户输入的选项
-    cout << endl
-         << "你的选择是：" << choice << "，请按回车键确认" << endl;
-    getchar();
-    if (choice == '2') // 如果用户选择退出游戏
+    srand((unsigned int)time(nullptr)); // 设置随机种子，使用当前时间作为种子，保证每次运行程序时生成的随机数不同
+    loadMaxScore();                     // 加载最高分
+    while (true)                        // 外层循环，控制整个游戏
     {
-        cout << endl
-             << "退出游戏，欢迎下次再来！" << endl;
-        return 0;
+        showMenu();             // 显示菜单界面
+        char choice = _getch(); // 获取用户输入的选项
+        if (choice == '2')
+        {
+            cout << "退出游戏，欢迎下次再来！" << endl;
+            return 0; // 退出游戏
+        }
+        if (choice != '1')
+        {
+            continue; // 如果输入的选项不是1或2，则重新显示菜单界面
+        }
+        system("cls");                  // 清屏
+        initGrid();                     // 初始化地图和蛇
+        spawnFood();                    // 生成食物
+        CONSOLE_CURSOR_INFO cursorInfo; // 设置光标不可见
+        cursorInfo.bVisible = false;
+        cursorInfo.dwSize = 1;
+        SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
+        while (!gameOver) // 内层循环，控制游戏进行
+        {
+            draw();      // 绘制地图
+            handInput(); // 处理用户输入
+            moveSnake(); // 移动蛇
+            Sleep(100);  // 延时，控制游戏速度
+        }
+        cursorInfo.bVisible = true; // 设置光标可见
+        SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
+        saveMaxScore(); // 保存最高分
+        showGameOver(); // 显示游戏结束界面
+        while (true)    // 等待用户输入重新开始或退出
+        {
+            char choice = _getch();
+            if (choice == 'y' || choice == 'Y')
+            {
+                freeSnake(); // 释放蛇的内存
+                break;       // 重新开始游戏
+            }
+            else if (choice == 'x' || choice == 'X')
+            {
+                freeSnake();    // 释放蛇的内存
+                delete[] grid;  // 释放地图的内存
+                grid = nullptr; // 将地图指针置为空，避免悬空指针
+                cout << "退出游戏，欢迎下次再来！" << endl;
+                return 0; // 退出游戏
+            }
+        }
     }
-    system("cls");
-    initGrid();  // 初始化地图
-    spawnFood(); // 随机生成食物
-
-    // 隐藏控制台的光标，减少闪烁
-    CONSOLE_CURSOR_INFO curInfo;
-    curInfo.dwSize = 1;
-    curInfo.bVisible = FALSE;
-    SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &curInfo);
-
-    while (!gameOver)
-    {
-        draw();      // 绘制地图
-        handInput(); // 处理键盘输入
-        moveSnake(); // 移动蛇
-        Sleep(100);  // 暂停100毫秒，控制游戏速度
-    }
-    saveMaxScore(); // 保存最高分
-    freeSnake();    // 释放蛇的内存
-    delete[] grid;  // 释放地图的内存
     return 0;
 }
